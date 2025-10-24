@@ -14,12 +14,17 @@ import java.util.Optional;
 @Repository
 public interface contenedorRepository extends JpaRepository<Contenedor, Long> {
     
-    Optional<Contenedor> findByCodigo(String codigo);
+    // CORREGIDO: Usar camelCase
+    Optional<Contenedor> findByNumeroIdentificacion(String numeroIdentificacion);
     
+    boolean existsByNumeroIdentificacion(String numeroIdentificacion);
+    
+    // CORREGIDO: Usar camelCase
     List<Contenedor> findByClienteId(Long clienteId);
     
     List<Contenedor> findByEstado(EstadoContenedor estado);
     
+    // CORREGIDO: Usar camelCase en las queries
     @Query("SELECT c FROM Contenedor c WHERE c.estado = :estado AND c.fechaCreacion >= :fechaDesde")
     List<Contenedor> findPendientesConFiltros(@Param("estado") EstadoContenedor estado, 
                                              @Param("fechaDesde") LocalDateTime fechaDesde);

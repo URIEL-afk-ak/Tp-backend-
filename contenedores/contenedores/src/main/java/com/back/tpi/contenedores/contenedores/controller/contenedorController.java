@@ -27,6 +27,11 @@ public class contenedorController {
     @Operation(summary = "Crear contenedor", description = "Crea un nuevo contenedor. Roles: CLIENTE | OPERADOR")
     public ResponseEntity<contenedorDTO> crearContenedor(@RequestBody contenedorDTO contenedorDTO) {
         try {
+            // CORREGIDO: cambiar getNumero_identificacion() por getNumeroIdentificacion()
+            if (contenedoresService.existePorNumeroIdentificacion(contenedorDTO.getNumeroIdentificacion())) {
+                return ResponseEntity.badRequest().build();
+            }
+            
             contenedorDTO contenedorCreado = contenedoresService.crearContenedor(contenedorDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(contenedorCreado);
         } catch (RuntimeException e) {
@@ -41,7 +46,7 @@ public class contenedorController {
         return ResponseEntity.ok(contenedores);
     }
     
-    @GetMapping("/{id}")
+    @GetMapping("/contenedores/{id}")
     @Operation(summary = "Consultar contenedor específico", description = "Consulta un contenedor específico por ID. Roles: CLIENTE (dueño) | OPERADOR")
     public ResponseEntity<contenedorDTO> consultarContenedorPorId(
             @Parameter(description = "ID del contenedor") @PathVariable Long id) {
@@ -50,7 +55,7 @@ public class contenedorController {
                 .orElse(ResponseEntity.notFound().build());
     }
     
-    @PatchMapping("/{id}/estado")
+    @PatchMapping("/contenedores/{id}/estado")
     @Operation(summary = "Actualizar estado del contenedor", description = "Actualiza el estado de un contenedor específico. Roles: OPERADOR")
     public ResponseEntity<contenedorDTO> actualizarEstadoContenedor(
             @Parameter(description = "ID del contenedor") @PathVariable Long id,
@@ -63,7 +68,7 @@ public class contenedorController {
         }
     }
     
-    @GetMapping("/pendientes")
+    @GetMapping("/contenedores/pendientes")
     @Operation(summary = "Consultar contenedores pendientes", description = "Consulta contenedores pendientes de entrega con filtros. Roles: OPERADOR")
     public ResponseEntity<List<contenedorDTO>> consultarContenedoresPendientes(
             @Parameter(description = "Estado del contenedor para filtrar") @RequestParam(required = false) EstadoContenedor estado,
@@ -81,7 +86,7 @@ public class contenedorController {
         return ResponseEntity.ok(contenedores);
     }
     
-    @GetMapping("/cliente/{clienteId}")
+    @GetMapping("/contenedores/cliente/{clienteId}")
     @Operation(summary = "Consultar contenedores por cliente", description = "Consulta todos los contenedores de un cliente específico")
     public ResponseEntity<List<contenedorDTO>> consultarContenedoresPorCliente(
             @Parameter(description = "ID del cliente") @PathVariable Long clienteId) {
@@ -89,11 +94,11 @@ public class contenedorController {
         return ResponseEntity.ok(contenedores);
     }
     
-    @GetMapping("/codigo/{codigo}")
-    @Operation(summary = "Consultar contenedor por código", description = "Consulta un contenedor por su código único")
-    public ResponseEntity<contenedorDTO> consultarContenedorPorCodigo(
-            @Parameter(description = "Código del contenedor") @PathVariable String codigo) {
-        Optional<contenedorDTO> contenedor = contenedoresService.consultarContenedorPorCodigo(codigo);
+    @GetMapping("/contenedores/numero-identificacion/{numeroIdentificacion}")
+    @Operation(summary = "Consultar contenedor por número de identificación", description = "Consulta un contenedor por su número de identificación único")
+    public ResponseEntity<contenedorDTO> consultarContenedorPorNumeroIdentificacion(
+            @Parameter(description = "Número de identificación del contenedor") @PathVariable String numeroIdentificacion) {
+        Optional<contenedorDTO> contenedor = contenedoresService.consultarContenedorPorNumeroIdentificacion(numeroIdentificacion);
         return contenedor.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

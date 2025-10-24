@@ -21,22 +21,31 @@ public class contenedoresService {
     private final contenedorRepository contenedorRepository;
     
     public contenedorDTO crearContenedor(contenedorDTO contenedorDTO) {
-        // Validar que el código no exista
-        if (contenedorRepository.findByCodigo(contenedorDTO.getCodigo()).isPresent()) {
-            throw new RuntimeException("Ya existe un contenedor con el código: " + contenedorDTO.getCodigo());
+        if (contenedorRepository.findByNumeroIdentificacion(contenedorDTO.getNumeroIdentificacion()).isPresent()) {
+            throw new RuntimeException("Ya existe un contenedor con el número de identificación: " + contenedorDTO.getNumeroIdentificacion());
         }
         
         Contenedor contenedor = new Contenedor();
-        contenedor.setCodigo(contenedorDTO.getCodigo());
+        contenedor.setNumeroIdentificacion(contenedorDTO.getNumeroIdentificacion());
         contenedor.setTipo(contenedorDTO.getTipo());
         contenedor.setCapacidad(contenedorDTO.getCapacidad());
         contenedor.setUbicacion(contenedorDTO.getUbicacion());
-        contenedor.setEstado(EstadoContenedor.PENDIENTE); // Estado inicial
+        contenedor.setEstado(EstadoContenedor.PENDIENTE);
         contenedor.setClienteId(contenedorDTO.getClienteId());
         contenedor.setObservaciones(contenedorDTO.getObservaciones());
         
         Contenedor contenedorGuardado = contenedorRepository.save(contenedor);
         return convertirADTO(contenedorGuardado);
+    }
+    
+    public boolean existePorNumeroIdentificacion(String numeroIdentificacion) {
+        return contenedorRepository.existsByNumeroIdentificacion(numeroIdentificacion);
+    }
+    
+    @Transactional(readOnly = true)
+    public Optional<contenedorDTO> consultarContenedorPorNumeroIdentificacion(String numeroIdentificacion) {
+        return contenedorRepository.findByNumeroIdentificacion(numeroIdentificacion)
+                .map(this::convertirADTO);
     }
     
     @Transactional(readOnly = true)
@@ -50,12 +59,6 @@ public class contenedoresService {
     @Transactional(readOnly = true)
     public Optional<contenedorDTO> consultarContenedorPorId(Long id) {
         return contenedorRepository.findById(id)
-                .map(this::convertirADTO);
-    }
-    
-    @Transactional(readOnly = true)
-    public Optional<contenedorDTO> consultarContenedorPorCodigo(String codigo) {
-        return contenedorRepository.findByCodigo(codigo)
                 .map(this::convertirADTO);
     }
     
@@ -99,12 +102,12 @@ public class contenedoresService {
     private contenedorDTO convertirADTO(Contenedor contenedor) {
         contenedorDTO dto = new contenedorDTO();
         dto.setId(contenedor.getId());
-        dto.setCodigo(contenedor.getCodigo());
+        dto.setClienteId(contenedor.getClienteId());
+        dto.setNumeroIdentificacion(contenedor.getNumeroIdentificacion());
         dto.setTipo(contenedor.getTipo());
         dto.setCapacidad(contenedor.getCapacidad());
         dto.setUbicacion(contenedor.getUbicacion());
         dto.setEstado(contenedor.getEstado());
-        dto.setClienteId(contenedor.getClienteId());
         dto.setFechaCreacion(contenedor.getFechaCreacion());
         dto.setFechaActualizacion(contenedor.getFechaActualizacion());
         dto.setFechaEntrega(contenedor.getFechaEntrega());

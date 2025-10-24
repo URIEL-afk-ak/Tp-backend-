@@ -17,8 +17,11 @@ public class Contenedor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false, unique = true)
-    private String codigo;
+    @Column(name = "cliente_id", nullable = false)
+    private Long clienteId;  // Cambiado a camelCase
+    
+    @Column(name = "numero_identificacion", nullable = false, unique = true)
+    private String numeroIdentificacion;  // Cambiado a camelCase
     
     @Column(nullable = false)
     private String tipo;
@@ -33,17 +36,14 @@ public class Contenedor {
     @Column(nullable = false)
     private EstadoContenedor estado;
     
-    @Column(name = "cliente_id", nullable = false)
-    private Long clienteId;
-    
     @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaCreacion;  // Cambiado a camelCase
     
     @Column(name = "fecha_actualizacion")
-    private LocalDateTime fechaActualizacion;
+    private LocalDateTime fechaActualizacion;  // Cambiado a camelCase
     
     @Column(name = "fecha_entrega")
-    private LocalDateTime fechaEntrega;
+    private LocalDateTime fechaEntrega;  // Cambiado a camelCase
     
     @Column(length = 500)
     private String observaciones;

@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 public class contenedorDTO {
     
     private Long id;
-    private String codigo;
+    private Long clienteId;  // Cambiado a camelCase
+    private String numeroIdentificacion;  // Cambiado a camelCase
     private String tipo;
     private Double capacidad;
     private String ubicacion;
     private EstadoContenedor estado;
-    private Long clienteId;
-    private LocalDateTime fechaCreacion;
-    private LocalDateTime fechaActualizacion;
-    private LocalDateTime fechaEntrega;
+    private LocalDateTime fechaCreacion;  // Cambiado a camelCase
+    private LocalDateTime fechaActualizacion;  // Cambiado a camelCase
+    private LocalDateTime fechaEntrega;  // Cambiado a camelCase
     private String observaciones;
 }
