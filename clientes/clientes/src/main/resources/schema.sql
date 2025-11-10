@@ -1,10 +1,8 @@
--- Esquema de la base de datos para clientes
--- Esta tabla se crea automáticamente por JPA, pero incluimos el script para referencia
-
+-- Tabla clientes
 CREATE TABLE IF NOT EXISTS clientes (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     nombre_completo VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) UNIQUE NOT NULL,
     telefono VARCHAR(255) NOT NULL,
     fecha_registro TIMESTAMP NOT NULL
 );
