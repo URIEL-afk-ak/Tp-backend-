@@ -1,4 +1,4 @@
-package com.back.tpi.rutas_tramos.rutas_tramos; // Ajusta este paquete si es necesario
+package com.back.tpi.depositos.depositos; // Ajusta este paquete si es necesario
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles; // Importación clave
 
 @SpringBootTest
 @ActiveProfiles("test") // <--- ESTO ES LO QUE ESTABA FALTANDO/FALANDO
-class RutasTramosApplicationTests {
+class DepositosApplicationTests {
 
 	@Test
 	void contextLoads() {

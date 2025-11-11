@@ -1,13 +1,14 @@
-package com.back.tpi.facturacion.facturacion;
+package com.back.tpi.facturacion.facturacion; // Ajusta este paquete si es necesario
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles; // Importación clave
 
 @SpringBootTest
+@ActiveProfiles("test") // <--- ESTO ES LO QUE ESTABA FALTANDO/FALANDO
 class FacturacionApplicationTests {
 
 	@Test
 	void contextLoads() {
 	}
-
 }
