@@ -1,0 +1,15 @@
+package com.tpi.gateway.api_gateway;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+// import org.springframework.cloud.client.discovery.EnableDiscoveryClient; // Ya no necesitamos esto
+
+@SpringBootApplication
+// @EnableDiscoveryClient // Quitar esta anotación
+public class ApiGatewayApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(ApiGatewayApplication.class, args);
+    }
+
+}
