@@ -1,0 +1,160 @@
+services:
+  # Keycloak (Identity Provider) - EN PUERTO 8080
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      # Credenciales de administrador del realm 'master'
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: "true"
+      KC_DB: dev-file # Usa H2 para desarrollo rápido
+    ports:
+      - "8080:8080"
+    command: ["start-dev"]
+    # Importación automática del realm 'tpi-realm'
+    # REQUIERE que el archivo 'realms/tpi-realm.json' exista.
+    volumes:
+      - ./realms/tpi-realm.json:/opt/keycloak/data/import/tpi-realm.json:ro
+    networks:
+      - backend-net
+    # Healthcheck más robusto que usa el endpoint de salud oficial
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      interval: 15s  # Más tiempo entre chequeos
+      timeout: 10s   # Más tiempo para la respuesta
+      retries: 30    # Más reintentos antes de fallar
+
+  # API Gateway - en puerto 8089
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8089:8089"
+    environment:
+      SERVER_PORT: 8089
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/tpi-realm
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  # Microservicios (el resto de los servicios se mantiene igual, esperando por Keycloak)
+  clientes:
+    build:
+      context: ./clientes/clientes
+      dockerfile: Dockerfile
+    container_name: ms-clientes
+    environment:
+      SERVER_PORT: 8081
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/tpi-realm
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  contenedores:
+    build:
+      context: ./contenedores/contenedores
+      dockerfile: Dockerfile
+    container_name: ms-contenedores
+    environment:
+      SERVER_PORT: 8082
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/tpi-realm
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  depositos:
+    build:
+      context: ./depositos/depositos
+      dockerfile: Dockerfile
+    container_name: ms-depositos
+    environment:
+      SERVER_PORT: 8083
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/tpi-realm
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  facturacion:
+    build:
+      context: ./facturacion/facturacion
+      dockerfile: Dockerfile
+    container_name: ms-facturacion
+    environment:
+      SERVER_PORT: 8084
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/tpi-realm
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  rutas_tramos:
+    build:
+      context: ./rutas_tramos/rutas_tramos
+      dockerfile: Dockerfile
+    container_name: ms-rutas-tramos
+    environment:
+      SERVER_PORT: 8085
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/tpi-realm
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  solicitudes:
+    build:
+      context: ./solicitudes/solicitudes
+      dockerfile: Dockerfile
+    container_name: ms-solicitudes
+    environment:
+      SERVER_PORT: 8086
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/tpi-realm
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  tracking:
+    build:
+      context: ./tracking/tracking
+      dockerfile: Dockerfile
+    container_name: ms-tracking
+    environment:
+      SERVER_PORT: 8087
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/tpi-realm
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+  camiones:
+    build:
+      context: ./camiones/camiones
+      dockerfile: Dockerfile
+    container_name: ms-camiones
+    environment:
+      SERVER_PORT: 8088
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/tpi-realm
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - backend-net
+
+networks:
+  backend-net:
+    driver: bridge
