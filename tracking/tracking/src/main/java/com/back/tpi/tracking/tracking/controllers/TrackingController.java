@@ -3,6 +3,7 @@ package com.back.tpi.tracking.tracking.controllers;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,11 +23,13 @@ public class TrackingController {
     public TrackingController(TrackingService service) { this.service = service; }
 
     @GetMapping("/contenedores/{id}/eventos")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR', 'ADMIN', 'TRANSPORTISTA')")
     public ResponseEntity<List<TrackingEvento>> eventos(@PathVariable Long id) {
         return ResponseEntity.ok(service.listarEventos(id));
     }
 
     @PostMapping("/eventos")
+    @PreAuthorize("hasAnyRole('TRANSPORTISTA', 'OPERADOR', 'ADMIN')")
     public ResponseEntity<TrackingEvento> registrar(@RequestBody TrackingEvento evento) {
         TrackingEvento creado = service.registrarEvento(evento);
         return ResponseEntity.status(201).body(creado);

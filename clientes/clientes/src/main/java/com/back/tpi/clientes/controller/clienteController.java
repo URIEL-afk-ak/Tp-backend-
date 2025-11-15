@@ -3,10 +3,14 @@ package com.back.tpi.clientes.controller;
 import com.back.tpi.clientes.entity.Cliente;
 import com.back.tpi.clientes.entityDTO.clienteDTO;
 import com.back.tpi.clientes.services.clienteService;
+import com.back.tpi.clientes.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -24,6 +28,7 @@ public class clienteController {
     
     // POST /clientes - Roles: OPERADOR. Crea cliente.
     @PostMapping("/clientes")
+    @PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
     public ResponseEntity<Cliente> crearCliente(@RequestBody clienteDTO clienteDTO) {
         try {
             Cliente cliente = clienteService.crearCliente(clienteDTO);
@@ -35,6 +40,7 @@ public class clienteController {
     
     // GET /clientes/{id} - Roles: OPERADOR. Devuelve cliente por ID.
     @GetMapping("/clientes/{id}")
+    @PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
     public ResponseEntity<Cliente> obtenerClientePorId(@PathVariable Long id) {
         Optional<Cliente> cliente = clienteService.obtenerClientePorId(id);
         if (cliente.isPresent()) {
@@ -46,7 +52,20 @@ public class clienteController {
     
     // GET /clientes/me - Roles: CLIENTE. Devuelve datos propios del cliente autenticado.
     @GetMapping("/clientes/me")
-    public ResponseEntity<Cliente> obtenerMisDatos(@RequestParam String email) {
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<Cliente> obtenerMisDatos(Authentication authentication) {
+        String email = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            email = JwtUtils.extractEmail(jwt);
+            if (email == null) {
+                email = JwtUtils.extractUsername(jwt);
+            }
+        }
+        
+        if (email == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
         Optional<Cliente> cliente = clienteService.obtenerClientePorEmail(email);
         if (cliente.isPresent()) {
             return new ResponseEntity<>(cliente.get(), HttpStatus.OK);
