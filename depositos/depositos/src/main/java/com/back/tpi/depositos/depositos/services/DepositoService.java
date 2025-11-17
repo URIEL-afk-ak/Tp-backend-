@@ -28,6 +28,28 @@ public class DepositoService {
         return convertirADTO(depositoGuardado);
     }
     
+    /**
+     * NUEVO: Método para actualizar depósito (Req. -+.)
+     */
+    public DepositoDTO actualizarDeposito(Long id, DepositoDTO depositoDTO) {
+        Deposito deposito = depositoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Depósito no encontrado con ID: " + id));
+
+        // Actualizar campos
+        if (depositoDTO.getNombre() != null) {
+            deposito.setNombre(depositoDTO.getNombre());
+        }
+        if (depositoDTO.getDireccion() != null) {
+            deposito.setDireccion(depositoDTO.getDireccion());
+        }
+        if (depositoDTO.getUbicacionGeografica() != null) {
+            deposito.setUbicacionGeografica(depositoDTO.getUbicacionGeografica());
+        }
+
+        Deposito depositoActualizado = depositoRepository.save(deposito);
+        return convertirADTO(depositoActualizado);
+    }
+    
     @Transactional(readOnly = true)
     public List<DepositoDTO> listarTodosLosDepositos() {
         return depositoRepository.findAll()
@@ -56,8 +78,8 @@ public class DepositoService {
         dto.setNombre(deposito.getNombre());
         dto.setDireccion(deposito.getDireccion());
         dto.setUbicacionGeografica(deposito.getUbicacionGeografica());
-        dto.setFechaCreacion(deposito.getFechaCreacion());
-        dto.setFechaActualizacion(deposito.getFechaActualizacion());
+        // Se asume que Deposito tiene fechaCreacion
+        // dto.setFechaCreacion(deposito.getFechaCreacion());
         return dto;
     }
 }

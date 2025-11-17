@@ -1,3 +1,5 @@
+// Archivo: SecurityConfig.java
+
 package com.tpi.gateway.api_gateway.config;
 
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -27,31 +29,29 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeExchange(exchanges -> exchanges
-                // Permitir acceso a rutas públicas si es necesario
-                // .pathMatchers("/api/public/**").permitAll()
-                
-                // Todas las demás rutas requieren autenticación
-                .anyExchange().authenticated()
+                // Permitir acceso a rutas públicas si es necesario (ej: /auth/login)
+                // .pathMatchers("/auth/**").permitAll() 
+                // Todas las demás peticiones deben estar autenticadas
+                .anyExchange().authenticated() 
             )
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.jwtDecoder(jwtDecoder))
-            );
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtDecoder(jwtDecoder))); 
 
         return http.build();
     }
-
+    
     /**
-     * GlobalFilter para propagar el token JWT del SecurityContext al header Authorization
-     * que se envía a los microservicios backend.
+     * Filtro Global para propagar el token JWT a los microservicios de backend.
+     * Si no se hace esto, el microservicio no recibirá el token y fallará el @PreAuthorize.
      */
     @Bean
-    public GlobalFilter jwtTokenPropagationFilter() {
+    public GlobalFilter tokenPropagationFilter() {
         return new GlobalFilter() {
             @Override
             public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+                // Obtener el contexto de seguridad reactivo
                 return ReactiveSecurityContextHolder.getContext()
-                    .cast(SecurityContext.class)
                     .map(SecurityContext::getAuthentication)
+                    .filter(auth -> auth instanceof JwtAuthenticationToken)
                     .cast(JwtAuthenticationToken.class)
                     .map(JwtAuthenticationToken::getToken)
                     .map(Jwt::getTokenValue)
@@ -84,4 +84,3 @@ public class SecurityConfig {
         return org.springframework.security.oauth2.jwt.ReactiveJwtDecoders.fromIssuerLocation(issuerUri);
     }
 }
-

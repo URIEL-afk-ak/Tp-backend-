@@ -32,6 +32,18 @@ public class CamionController {
         }
     }
     
+    @PutMapping("/transportistas/{id}")
+    @Operation(summary = "Actualizar transportista", description = "Actualiza la información de un transportista existente. Roles: OPERADOR")
+    public ResponseEntity<TransportistaDTO> actualizarTransportista(@PathVariable Long id, @RequestBody TransportistaDTO transportistaDTO) {
+        try {
+            // El servicio debe buscar, actualizar y guardar el transportista.
+            TransportistaDTO transportistaActualizado = camionService.actualizarTransportista(id, transportistaDTO);
+            return ResponseEntity.ok(transportistaActualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
     @GetMapping("/transportistas")
     @Operation(summary = "Listar transportistas", description = "Lista todos los transportistas. Roles: OPERADOR")
     public ResponseEntity<List<TransportistaDTO>> listarTransportistas() {
@@ -47,6 +59,18 @@ public class CamionController {
             return ResponseEntity.status(HttpStatus.CREATED).body(camionCreado);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/camiones/{id}")
+    @Operation(summary = "Actualizar camión", description = "Actualiza la información de un camión existente (peso/volumen/etc). Roles: OPERADOR")
+    public ResponseEntity<CamionDTO> actualizarCamion(@PathVariable Long id, @RequestBody CamionDTO camionDTO) {
+        try {
+            // El servicio debe buscar, actualizar y guardar el camión.
+            CamionDTO camionActualizado = camionService.actualizarCamion(id, camionDTO);
+            return ResponseEntity.ok(camionActualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         }
     }
     

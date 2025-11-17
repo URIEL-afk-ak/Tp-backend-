@@ -6,5 +6,7 @@ public enum EstadoSolicitud {
     RECHAZADA,
     CANCELADA,
     EN_TRANSITO,
-    COMPLETADA
+    COMPLETADA,
+    EN_CURSO,     // Agregado
+    ENTREGADA     // Agregado
 }

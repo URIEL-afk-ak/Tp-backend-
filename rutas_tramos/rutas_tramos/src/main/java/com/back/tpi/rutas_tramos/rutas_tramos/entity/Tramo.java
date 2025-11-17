@@ -15,6 +15,15 @@ public class Tramo {
 
     @Column(name = "transportista_id")
     private Long transportistaId;
+    
+    // ↓↓↓ CAMPOS AGREGADOS PARA LA ASIGNACIÓN Y REGISTRO REAL ↓↓↓
+    @Column(name = "camion_id")
+    private Long camionId; 
+    
+    private Double distanciaKmEstimada; 
+    private Double distanciaKmReal;     
+    private Double costoReal;           
+    // ↑↑↑ FIN CAMPOS AGREGADOS ↑↑↑
 
     @Column(nullable = false)
     private String origen;
@@ -31,7 +40,20 @@ public class Tramo {
     private LocalDateTime inicioEstimado;
     private LocalDateTime finEstimado;
 
-    // getters/setters
+    // --- Getters y Setters ---
+
+    public Long getCamionId() { return camionId; }
+    public void setCamionId(Long camionId) { this.camionId = camionId; }
+    
+    public Double getDistanciaKmEstimada() { return distanciaKmEstimada; }
+    public void setDistanciaKmEstimada(Double distanciaKmEstimada) { this.distanciaKmEstimada = distanciaKmEstimada; }
+    
+    public Double getDistanciaKmReal() { return distanciaKmReal; }
+    public void setDistanciaKmReal(Double distanciaKmReal) { this.distanciaKmReal = distanciaKmReal; }
+    
+    public Double getCostoReal() { return costoReal; }
+    public void setCostoReal(Double costoReal) { this.costoReal = costoReal; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getSolicitudId() { return solicitudId; }

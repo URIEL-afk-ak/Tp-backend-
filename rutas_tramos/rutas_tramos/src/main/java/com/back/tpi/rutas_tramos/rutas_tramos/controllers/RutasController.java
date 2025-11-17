@@ -26,6 +26,22 @@ public class RutasController {
 
     public static class PreviewRequest { public Long solicitudId; public String origen; public String destino; public Double distanciaKm; }
 
+    public static class AsignarCamionRequest { public Long camionId; }
+    
+    // Nuevo: Asignar un camión a un tramo (Req 4)
+    @PatchMapping("/tramos/{id}/asignarCamion")
+    public ResponseEntity<Tramo> asignarCamionATramo(@PathVariable Long id, @RequestBody AsignarCamionRequest req) {
+        if (req == null || req.camionId == null) return ResponseEntity.badRequest().build();
+        try {
+            // El servicio debe validar peso/volumen antes de la asignación (Req --.)
+            Tramo actualizado = service.asignarCamionATramo(id, req.camionId); 
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException ex) {
+            // Devolver 404 si el tramo no existe o 400 si falla la validación de capacidad
+            return ResponseEntity.notFound().build(); 
+        }
+    }
+
     @PostMapping("/rutas/preview")
     public ResponseEntity<Tramo> previewRuta(@RequestBody PreviewRequest req) {
         if (req == null || req.distanciaKm == null) return ResponseEntity.badRequest().build();

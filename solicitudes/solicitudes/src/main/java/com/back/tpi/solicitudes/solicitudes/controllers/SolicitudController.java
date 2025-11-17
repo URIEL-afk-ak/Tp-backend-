@@ -75,6 +75,12 @@ public class SolicitudController {
         public String estado;
     }
 
+    // Nuevo: DTO para finalizar solicitud y registrar valores reales (Req 8)
+    public static class SolicitudFinalizacionRequest {
+        public Double tiempoRealHoras; // Total real time
+        public Double costoRealTotal; // Total real cost
+    }
+
     @PatchMapping("solicitudes/{id}/estado")
     @PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
     public ResponseEntity<SolicitudDTO> actualizarEstado(@PathVariable Long id, @RequestBody EstadoUpdateRequest req) {
@@ -87,6 +93,19 @@ public class SolicitudController {
         }
         try {
             SolicitudDTO actualizado = service.actualizarEstado(id, nuevo);
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    @PatchMapping("solicitudes/{id}/finalizar")
+    @PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
+    public ResponseEntity<SolicitudDTO> finalizarSolicitud(@PathVariable Long id, @RequestBody SolicitudFinalizacionRequest req) {
+        if (req == null || req.tiempoRealHoras == null || req.costoRealTotal == null) return ResponseEntity.badRequest().build();
+        try {
+            // El servicio debe actualizar el estado a ENTREGADA y registrar el tiempo y costo.
+            SolicitudDTO actualizado = service.finalizarSolicitud(id, req.tiempoRealHoras, req.costoRealTotal);
             return ResponseEntity.ok(actualizado);
         } catch (RuntimeException ex) {
             return ResponseEntity.notFound().build();

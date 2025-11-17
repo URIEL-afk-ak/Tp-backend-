@@ -1,0 +1,82 @@
+{
+  "id": "tpi-realm",
+  "realm": "tpi-realm",
+  "enabled": true,
+  "registrationAllowed": true,
+  "clients": [
+    {
+      "clientId": "tpi-backend",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "tu-client-secret-aqui",
+      "redirectUris": ["http://localhost:8080/*"],
+      "webOrigins": ["*"],
+      "attributes": {
+        "access.token.lifespan": "300"
+      }
+    },
+    {
+      "clientId": "tpi-frontend",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["*"]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123"
+        }
+      ],
+      "realmRoles": ["admin"],
+      "clientRoles": {
+        "realm-management": ["realm-admin"]
+      }
+    },
+    {
+      "username": "cliente",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cliente123"
+        }
+      ],
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "transportista",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "transportista123"
+        }
+      ],
+      "realmRoles": ["transportista"]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Administrador del sistema"
+      },
+      {
+        "name": "user",
+        "description": "Usuario cliente"
+      },
+      {
+        "name": "transportista",
+        "description": "Usuario transportista"
+      }
+    ]
+  }
+}

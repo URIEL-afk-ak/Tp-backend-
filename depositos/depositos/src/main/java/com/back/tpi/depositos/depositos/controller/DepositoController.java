@@ -35,6 +35,18 @@ public class DepositoController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @PutMapping("/depositos/{id}")
+    @Operation(summary = "Actualizar depósito", description = "Actualiza la información de un depósito existente. Roles: OPERADOR/ADMIN")
+    public ResponseEntity<DepositoDTO> actualizarDeposito(@PathVariable Long id, @RequestBody DepositoDTO depositoDTO) {
+        try {
+            // El servicio debe buscar, actualizar y guardar el depósito.
+            DepositoDTO depositoActualizado = depositoService.actualizarDeposito(id, depositoDTO);
+            return ResponseEntity.ok(depositoActualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
     
     @GetMapping("/depositos")
     @Operation(summary = "Listar todos los depósitos")

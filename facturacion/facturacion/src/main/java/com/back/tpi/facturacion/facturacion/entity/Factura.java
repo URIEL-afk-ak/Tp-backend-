@@ -17,6 +17,12 @@ public class Factura {
     private Boolean pagado = false;
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    // 
+    // NUEVOS CAMPOS AGREGADOS PARA EL CÁLCULO DE COSTOS
+    //
+    private Double costoTotal; 
+    private Double distanciaTotalKm; 
+
     // getters/setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -28,4 +34,12 @@ public class Factura {
     public void setPagado(Boolean pagado) { this.pagado = pagado; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    //
+    // NUEVOS GETTERS Y SETTERS
+    //
+    public Double getCostoTotal() { return costoTotal; }
+    public void setCostoTotal(Double costoTotal) { this.costoTotal = costoTotal; }
+    public Double getDistanciaTotalKm() { return distanciaTotalKm; }
+    public void setDistanciaTotalKm(Double distanciaTotalKm) { this.distanciaTotalKm = distanciaTotalKm; }
 }

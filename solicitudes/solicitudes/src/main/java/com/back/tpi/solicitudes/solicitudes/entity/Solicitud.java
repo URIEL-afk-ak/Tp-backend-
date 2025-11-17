@@ -30,6 +30,13 @@ public class Solicitud {
     @Column(nullable = false)
     private EstadoSolicitud estado = EstadoSolicitud.PENDIENTE;
 
+    // CAMPOS AGREGADOS PARA VALORES REALES
+    @Column(name = "tiempo_real_horas")
+    private Double tiempoRealHoras;
+    
+    @Column(name = "costo_real_total")
+    private Double costoRealTotal;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -46,7 +53,7 @@ public class Solicitud {
         updatedAt = LocalDateTime.now();
     }
 
-    // Getters / Setters (generate in IDE) - kept explicit for clarity
+    // Getters / Setters
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -68,6 +75,13 @@ public class Solicitud {
 
     public EstadoSolicitud getEstado() { return estado; }
     public void setEstado(EstadoSolicitud estado) { this.estado = estado; }
+
+    // Nuevos getters y setters
+    public Double getTiempoRealHoras() { return tiempoRealHoras; }
+    public void setTiempoRealHoras(Double tiempoRealHoras) { this.tiempoRealHoras = tiempoRealHoras; }
+
+    public Double getCostoRealTotal() { return costoRealTotal; }
+    public void setCostoRealTotal(Double costoRealTotal) { this.costoRealTotal = costoRealTotal; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
