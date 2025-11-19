@@ -4,6 +4,11 @@ import com.back.tpi.clientes.entity.Cliente;
 import com.back.tpi.clientes.entityDTO.clienteDTO;
 import com.back.tpi.clientes.services.clienteService;
 import com.back.tpi.clientes.util.JwtUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -17,6 +22,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Clientes", description = "Operaciones CRUD para gestionar clientes")
 public class clienteController {
     
     @Autowired
@@ -29,6 +35,18 @@ public class clienteController {
     // POST /clientes - Roles: OPERADOR. Crea cliente.
     @PostMapping("/clientes")
     @PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
+    @Operation(
+        summary = "Registrar nuevo cliente",
+        description = "Crea un cliente con los datos proporcionados",
+        responses = {
+            @ApiResponse(
+                responseCode = "201",
+                description = "Cliente creado",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = Cliente.class))
+            ),
+            @ApiResponse(responseCode = "400", description = "Datos invalidos")
+        }
+    )
     public ResponseEntity<Cliente> crearCliente(@RequestBody clienteDTO clienteDTO) {
         try {
             Cliente cliente = clienteService.crearCliente(clienteDTO);
@@ -41,6 +59,18 @@ public class clienteController {
     // GET /clientes/{id} - Roles: OPERADOR. Devuelve cliente por ID.
     @GetMapping("/clientes/{id}")
     @PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
+    @Operation(
+        summary = "Obtener cliente por id",
+        description = "Busca un cliente especifico mediante su identificador",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Cliente encontrado",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = Cliente.class))
+            ),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
+        }
+    )
     public ResponseEntity<Cliente> obtenerClientePorId(@PathVariable Long id) {
         Optional<Cliente> cliente = clienteService.obtenerClientePorId(id);
         if (cliente.isPresent()) {
@@ -53,6 +83,19 @@ public class clienteController {
     // GET /clientes/me - Roles: CLIENTE. Devuelve datos propios del cliente autenticado.
     @GetMapping("/clientes/me")
     @PreAuthorize("hasRole('CLIENTE')")
+    @Operation(
+        summary = "Obtener datos del cliente autenticado",
+        description = "Devuelve los datos del cliente asociados al token JWT",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "Cliente encontrado",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = Cliente.class))
+            ),
+            @ApiResponse(responseCode = "401", description = "Token invalido o faltante"),
+            @ApiResponse(responseCode = "404", description = "Cliente no encontrado")
+        }
+    )
     public ResponseEntity<Cliente> obtenerMisDatos(Authentication authentication) {
         String email = null;
         if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {

@@ -19,6 +19,11 @@ import com.back.tpi.solicitudes.solicitudes.dto.SolicitudDTO;
 import com.back.tpi.solicitudes.solicitudes.entity.EstadoSolicitud;
 import com.back.tpi.solicitudes.solicitudes.service.SolicitudService;
 import com.back.tpi.solicitudes.solicitudes.util.JwtUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /*
  Endpoints:
@@ -31,6 +36,7 @@ import com.back.tpi.solicitudes.solicitudes.util.JwtUtils;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Solicitudes", description = "Operaciones sobre solicitudes de transporte")
 public class SolicitudController {
 
     private final SolicitudService service;
@@ -40,6 +46,14 @@ public class SolicitudController {
     }
 
     @PostMapping("solicitudes")
+    @Operation(
+        summary = "Crear solicitud",
+        description = "Crea una solicitud de transporte para un cliente",
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Solicitud creada", content = @Content(schema = @Schema(implementation = SolicitudDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+        }
+    )
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<SolicitudDTO> crearSolicitud(@RequestBody SolicitudDTO dto, Authentication authentication) {
         // Validar que el clienteId del DTO coincida con el usuario autenticado
@@ -53,6 +67,13 @@ public class SolicitudController {
     }
 
     @GetMapping("solicitudes/{id}")
+    @Operation(
+        summary = "Obtener solicitud por id",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Solicitud encontrada", content = @Content(schema = @Schema(implementation = SolicitudDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Solicitud no encontrada")
+        }
+    )
     @PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR', 'ADMIN')")
     public ResponseEntity<SolicitudDTO> obtenerPorId(@PathVariable Long id, Authentication authentication) {
         SolicitudDTO dto = service.obtenerPorId(id);
@@ -82,6 +103,15 @@ public class SolicitudController {
     }
 
     @PatchMapping("solicitudes/{id}/estado")
+    @Operation(
+        summary = "Actualizar estado de solicitud",
+        description = "Actualiza el estado a ACEPTADA, RECHAZADA, EN_PROCESO, ENTREGADA, etc.",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Solicitud actualizada", content = @Content(schema = @Schema(implementation = SolicitudDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Estado inválido"),
+            @ApiResponse(responseCode = "404", description = "Solicitud no encontrada")
+        }
+    )
     @PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
     public ResponseEntity<SolicitudDTO> actualizarEstado(@PathVariable Long id, @RequestBody EstadoUpdateRequest req) {
         if (req == null || req.estado == null) return ResponseEntity.badRequest().build();
@@ -100,6 +130,15 @@ public class SolicitudController {
     }
     
     @PatchMapping("solicitudes/{id}/finalizar")
+    @Operation(
+        summary = "Finalizar solicitud",
+        description = "Registra tiempos y costo real y marca la solicitud como entregada",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Solicitud finalizada", content = @Content(schema = @Schema(implementation = SolicitudDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "404", description = "Solicitud no encontrada")
+        }
+    )
     @PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
     public ResponseEntity<SolicitudDTO> finalizarSolicitud(@PathVariable Long id, @RequestBody SolicitudFinalizacionRequest req) {
         if (req == null || req.tiempoRealHoras == null || req.costoRealTotal == null) return ResponseEntity.badRequest().build();
@@ -113,6 +152,10 @@ public class SolicitudController {
     }
 
     @GetMapping("solicitudes/estado/{estado}")
+    @Operation(
+        summary = "Listar solicitudes por estado",
+        responses = @ApiResponse(responseCode = "200", description = "Listado de solicitudes", content = @Content(schema = @Schema(implementation = SolicitudDTO.class)))
+    )
     @PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
     public ResponseEntity<List<SolicitudDTO>> listarPorEstado(@PathVariable String estado) {
         EstadoSolicitud e;

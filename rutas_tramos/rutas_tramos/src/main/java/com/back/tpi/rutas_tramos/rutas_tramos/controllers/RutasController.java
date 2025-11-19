@@ -12,12 +12,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.back.tpi.rutas_tramos.rutas_tramos.dto.TramoDTO;
 import com.back.tpi.rutas_tramos.rutas_tramos.entity.EstadoTramo;
 import com.back.tpi.rutas_tramos.rutas_tramos.entity.Tramo;
 import com.back.tpi.rutas_tramos.rutas_tramos.service.RutasService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Rutas y Tramos", description = "Operaciones para asignar rutas y administrar tramos")
 public class RutasController {
 
     private final RutasService service;
@@ -30,6 +37,15 @@ public class RutasController {
     
     // Nuevo: Asignar un camión a un tramo (Req 4)
     @PatchMapping("/tramos/{id}/asignarCamion")
+    @Operation(
+        summary = "Asignar camión a tramo",
+        description = "Asigna un camión a un tramo y valida capacidad",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Tramo actualizado", content = @Content(schema = @Schema(implementation = Tramo.class))),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "404", description = "Tramo no encontrado")
+        }
+    )
     public ResponseEntity<Tramo> asignarCamionATramo(@PathVariable Long id, @RequestBody AsignarCamionRequest req) {
         if (req == null || req.camionId == null) return ResponseEntity.badRequest().build();
         try {
@@ -43,6 +59,11 @@ public class RutasController {
     }
 
     @PostMapping("/rutas/preview")
+    @Operation(
+        summary = "Pre visualizar ruta",
+        description = "Calcula un tramo de preview con distancia estimada",
+        responses = @ApiResponse(responseCode = "200", description = "Tramo de preview", content = @Content(schema = @Schema(implementation = Tramo.class)))
+    )
     public ResponseEntity<Tramo> previewRuta(@RequestBody PreviewRequest req) {
         if (req == null || req.distanciaKm == null) return ResponseEntity.badRequest().build();
         Tramo preview = service.previewRuta(req.solicitudId, req.origen, req.destino, req.distanciaKm);
@@ -50,12 +71,26 @@ public class RutasController {
     }
 
     @PostMapping("/rutas/asignar")
+    @Operation(
+        summary = "Asignar ruta",
+        description = "Crea el tramo real de la solicitud",
+        responses = @ApiResponse(responseCode = "201", description = "Tramo creado", content = @Content(schema = @Schema(implementation = Tramo.class)))
+    )
     public ResponseEntity<Tramo> asignarRuta(@RequestBody Tramo tramo) {
         Tramo creado = service.asignarRuta(tramo);
         return ResponseEntity.status(201).body(creado);
     }
 
     @PatchMapping("/tramos/{id}/estado")
+    @Operation(
+        summary = "Actualizar estado del tramo",
+        description = "Actualiza el estado de un tramo",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Tramo actualizado", content = @Content(schema = @Schema(implementation = Tramo.class))),
+            @ApiResponse(responseCode = "400", description = "Estado inválido"),
+            @ApiResponse(responseCode = "404", description = "Tramo no encontrado")
+        }
+    )
     public ResponseEntity<Tramo> actualizarEstado(@PathVariable Long id, @RequestBody String estado) {
         try {
             EstadoTramo e = EstadoTramo.valueOf(estado.replace("\"","").toUpperCase());
@@ -69,6 +104,10 @@ public class RutasController {
     }
 
     @GetMapping("/tramos/asignados")
+    @Operation(
+        summary = "Listar tramos asignados a transportista",
+        responses = @ApiResponse(responseCode = "200", description = "Listado de tramos", content = @Content(schema = @Schema(implementation = Tramo.class)))
+    )
     public ResponseEntity<List<Tramo>> tramosAsignados(@RequestParam Long transportistaId) {
         return ResponseEntity.ok(service.listarAsignados(transportistaId));
     }

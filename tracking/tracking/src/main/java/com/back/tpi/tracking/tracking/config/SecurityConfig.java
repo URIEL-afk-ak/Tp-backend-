@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 public class SecurityConfig {
 
     private static final Set<String> ROLES_POR_DEFECTO = Set.of(
-        "default-roles-tpi-realm",
-        "offline_access",
-        "uma_authorization"
+        "DEFAULT-ROLES-TPI-REALM",
+        "OFFLINE_ACCESS",
+        "UMA_AUTHORIZATION"
     );
 
     @Bean
@@ -43,7 +43,7 @@ public class SecurityConfig {
                 // Swagger/OpenAPI - permitir en desarrollo
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                 
-                // Endpoints específicos por rol
+               // Endpoints específicos por rol
                 .requestMatchers("/api/tracking/contenedores/{id}/eventos").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN", "TRANSPORTISTA")
                 .requestMatchers("/api/tracking/eventos").hasAnyRole("TRANSPORTISTA", "OPERADOR", "ADMIN")
                 
@@ -72,24 +72,24 @@ public class SecurityConfig {
         public Collection<GrantedAuthority> convert(Jwt jwt) {
             Object realmAccess = jwt.getClaim("realm_access");
             
-            if (realmAccess instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> realmAccessMap = (Map<String, Object>) realmAccess;
-                Object rolesObj = realmAccessMap.get("roles");
-                
-                if (rolesObj instanceof List) {
-                    @SuppressWarnings("unchecked")
-                    List<String> roles = (List<String>) rolesObj;
-                    
-                    return roles.stream()
-                        .filter(role -> !ROLES_POR_DEFECTO.contains(role))
-                        .filter(role -> !role.startsWith("default-"))
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                        .collect(Collectors.toList());
-                }
+            if (!(realmAccess instanceof Map<?, ?> realmAccessMap)) {
+                return Collections.emptyList();
             }
-            
-            return Collections.emptyList();
+            Object rolesObj = realmAccessMap.get("roles");
+            if (!(rolesObj instanceof List<?> roles)) {
+                return Collections.emptyList();
+            }
+
+            return roles.stream()
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .map(String::trim)
+                .filter(role -> !role.isEmpty())
+                .map(String::toUpperCase)
+                .filter(role -> !ROLES_POR_DEFECTO.contains(role))
+                .filter(role -> !role.startsWith("DEFAULT-"))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .collect(Collectors.toList());
         }
     }
 

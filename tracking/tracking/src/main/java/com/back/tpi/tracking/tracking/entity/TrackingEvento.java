@@ -2,24 +2,34 @@ package com.back.tpi.tracking.tracking.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "tracking_eventos")
+@Schema(description = "Evento de tracking generado para un contenedor")
 public class TrackingEvento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador del evento", example = "12", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @Column(name = "contenedor_id", nullable = false)
+    @Schema(description = "Identificador del contenedor", example = "101", requiredMode = Schema.RequiredMode.REQUIRED)
     private Long contenedorId;
 
     @Column(name = "transportista_id")
+    @Schema(description = "Identificador del transportista que reporta el evento", example = "55")
     private Long transportistaId;
 
+    @Schema(description = "Tipo de evento", example = "LLEGADA")
     private String tipo;
+    @Schema(description = "Descripcion del evento", example = "El contenedor llegó al depósito")
     private String descripcion;
+    @Schema(description = "Latitud asociada al evento", example = "-34.6037")
     private Double lat;
+    @Schema(description = "Longitud asociada al evento", example = "-58.3816")
     private Double lon;
+    @Schema(description = "Fecha de creación del evento", example = "2024-05-10T14:30:00", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // getters/setters
