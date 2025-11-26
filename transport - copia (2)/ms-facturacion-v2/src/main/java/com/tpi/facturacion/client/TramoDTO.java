@@ -26,4 +26,8 @@ public class TramoDTO {
     private String estado;
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;
+    
+    // Datos del camión para cálculo de factura
+    private Double costoKm;
+    private Double consumoCombustibleLtKm;
 }

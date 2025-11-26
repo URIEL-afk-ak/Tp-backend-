@@ -159,8 +159,65 @@ public class DataInitializer implements CommandLineRunner {
                 SELECT 19, 'Depósito Misiones', 'Av. Uruguay 1800, Posadas', -27.3671, -55.8961, 400.0, 1400.0, 'ACTIVO', '5493764019000', CURRENT_TIMESTAMP
                 WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 19)
             """);
-            
-            System.out.println("✅ Datos iniciales de Logística cargados: 3 transportistas, 4 camiones, 19 depósitos estratégicos en Argentina");
+
+            // Depósitos adicionales para llegar a 30
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 20, 'Depósito Bahía Blanca', 'Puerto Bahía Blanca', -38.7183, -62.2655, 600.0, 1750.0, 'ACTIVO', '5492914020000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 20)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 21, 'Depósito Mar del Plata', 'Zona Industrial, Mar del Plata', -38.0055, -57.5426, 650.0, 1800.0, 'ACTIVO', '5492234021000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 21)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 22, 'Depósito San Nicolás', 'Parque Industrial, San Nicolás', -33.3342, -60.2209, 500.0, 1600.0, 'ACTIVO', '5493364022000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 22)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 23, 'Depósito Tandil', 'Ruta 226 km 170, Tandil', -37.3217, -59.1332, 400.0, 1500.0, 'ACTIVO', '5492494023000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 23)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 24, 'Depósito Villa María', 'Parque Industrial, Villa María', -32.4075, -63.2406, 450.0, 1450.0, 'ACTIVO', '5493534024000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 24)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 25, 'Depósito Rafaela', 'Ruta 34 km 220, Rafaela', -31.2500, -61.4867, 400.0, 1400.0, 'ACTIVO', '5493492425000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 25)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 26, 'Depósito Reconquista', 'Zona Industrial, Reconquista', -29.1447, -59.6528, 350.0, 1300.0, 'ACTIVO', '5493482426000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 26)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 27, 'Depósito Goya', 'Ruta 12 km 800, Goya', -29.1400, -59.2622, 350.0, 1250.0, 'ACTIVO', '5493776427000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 27)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 28, 'Depósito Concordia', 'Parque Industrial, Concordia', -31.3929, -58.0170, 400.0, 1400.0, 'ACTIVO', '5493456428000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 28)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 29, 'Depósito Paraná', 'Zona Industrial, Paraná', -31.7319, -60.5238, 450.0, 1450.0, 'ACTIVO', '5493436429000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 29)
+            """);
+            jdbcTemplate.execute("""
+                INSERT INTO v2_depositos (id, nombre, direccion, lat, lon, capacidad_maxima_m3, costo_dia, estado, telefono, fecha_registro)
+                SELECT 30, 'Depósito Santa Fe', 'Ruta 11 km 480, Santa Fe', -31.6333, -60.7000, 500.0, 1500.0, 'ACTIVO', '5493425430000', CURRENT_TIMESTAMP
+                WHERE NOT EXISTS (SELECT 1 FROM v2_depositos WHERE id = 30)
+            """);
+
+            System.out.println("✅ Datos iniciales de Logística cargados: 3 transportistas, 4 camiones, 30 depósitos estratégicos en Argentina");
         } else {
             System.out.println("ℹ️ Datos de Logística ya existen, omitiendo carga inicial");
         }

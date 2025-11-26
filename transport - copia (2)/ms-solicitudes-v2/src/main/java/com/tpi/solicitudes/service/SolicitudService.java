@@ -221,26 +221,13 @@ public class SolicitudService {
         log.info("🧮 Calculando costos reales para solicitud {}", solicitud.getId());
         
         try {
-            // Obtener todos los tramos de la solicitud
+            // Obtener todos los tramos de la solicitud (para tiempo real y validación)
             List<TramoDTO> tramos = logisticaClient.listarTramosPorSolicitud(solicitud.getId());
-            
             if (tramos.isEmpty()) {
                 log.warn("⚠️ No hay tramos para la solicitud {}", solicitud.getId());
                 return;
             }
-            
-            // Calcular costo real total (sumar distancias * tarifa promedio)
-            double costoRealTotal = 0.0;
-            double distanciaTotal = 0.0;
-            
-            for (TramoDTO tramo : tramos) {
-                if (tramo.getDistanciaKm() != null) {
-                    distanciaTotal += tramo.getDistanciaKm();
-                    // Tarifa promedio: $150 por km
-                    costoRealTotal += tramo.getDistanciaKm() * 150.0;
-                }
-            }
-            
+
             // Calcular tiempo real en horas
             Double tiempoRealHoras = null;
             LocalDateTime primeraFechaInicio = tramos.stream()
@@ -248,35 +235,31 @@ public class SolicitudService {
                     .map(TramoDTO::getFechaInicio)
                     .min(LocalDateTime::compareTo)
                     .orElse(null);
-            
+
             LocalDateTime ultimaFechaFin = tramos.stream()
                     .filter(t -> t.getFechaFin() != null)
                     .map(TramoDTO::getFechaFin)
                     .max(LocalDateTime::compareTo)
                     .orElse(null);
-            
+
             if (primeraFechaInicio != null && ultimaFechaFin != null) {
                 long minutos = java.time.Duration.between(primeraFechaInicio, ultimaFechaFin).toMinutes();
                 tiempoRealHoras = minutos / 60.0;
             }
-            
-            // Actualizar solicitud
-            solicitud.setCostoReal(costoRealTotal);
-            solicitud.setTiempoRealHoras(tiempoRealHoras);
-            solicitud.setFechaEntrega(LocalDateTime.now());
-            
-            log.info("✅ Costos calculados - Solicitud {}: Distancia={}km, Costo=${}, Tiempo={}h", 
-                    solicitud.getId(), distanciaTotal, costoRealTotal, tiempoRealHoras);
-            
-            // Intentar generar factura (opcional, puede fallar si servicio no disponible)
+
+            // Generar factura y usar su total como costo real
             try {
                 FacturaDTO factura = facturacionClient.generarFactura(solicitud.getId());
-                log.info("📄 Factura generada: {} - Total: ${}", 
-                        factura.getNumeroFactura(), factura.getTotal());
+                Double totalFactura = factura.getTotal();
+                solicitud.setCostoReal(totalFactura);
+                log.info("📄 Factura generada: {} - Total: ${}", factura.getNumeroFactura(), totalFactura);
             } catch (Exception e) {
                 log.warn("⚠️ No se pudo generar factura automáticamente: {}", e.getMessage());
             }
-            
+
+            solicitud.setTiempoRealHoras(tiempoRealHoras);
+            solicitud.setFechaEntrega(LocalDateTime.now());
+
         } catch (Exception e) {
             log.error("❌ Error al calcular costos reales para solicitud {}: {}", 
                     solicitud.getId(), e.getMessage());

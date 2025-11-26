@@ -5,6 +5,8 @@ import com.tpi.logistica.entity.*;
 import com.tpi.logistica.repository.*;
 import com.tpi.logistica.client.SolicitudClient;
 import com.tpi.logistica.client.SolicitudDTO;
+import com.tpi.logistica.client.TarifaDTO;
+import com.tpi.logistica.client.FacturacionClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ public class RutaService {
     private final DepositoRepository depositoRepository;
     private final GoogleMapsService googleMapsService;
     private final SolicitudClient solicitudClient;
+    private final FacturacionClient facturacionClient;
     
     /**
      * Calcula múltiples rutas tentativas para que el operador elija
@@ -101,7 +104,22 @@ public class RutaService {
         }
         
         Double tiempo = googleMapsService.calcularTiempoEstimado(distancia);
-        Double costoEstimado = distancia * 150.0; // $150/km promedio
+        
+        // Obtener tarifa vigente para calcular costo real
+        Double costoKmPromedioDesde = 150.0; // Valor por defecto si falla
+        try {
+            TarifaDTO tarifa = facturacionClient.obtenerTarifaVigente();
+            if (tarifa != null) {
+                // Usar un costo/km estimado basado en la tarifa
+                // Como la tarifa no tiene costo/km, usamos cargo de gestión como referencia
+                costoKmPromedioDesde = tarifa.getCargoGestionBase() / 10.0; // Aproximación
+                log.info("💰 Tarifa vigente obtenida: cargo base ${}", tarifa.getCargoGestionBase());
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ No se pudo obtener tarifa vigente, usando costo por defecto: ${}/km", costoKmPromedioDesde);
+        }
+        
+        Double costoEstimado = distancia * costoKmPromedioDesde;
         
         // Guardar ruta en BD
         Ruta ruta = Ruta.builder()
@@ -199,9 +217,22 @@ public class RutaService {
         
         log.info("✅ Distancia total REAL (por carretera): {}km", distanciaTotal);
         
+        // Obtener tarifa vigente para calcular costo real
+        Double costoKmPromedioDesde = 150.0; // Valor por defecto si falla
+        try {
+            TarifaDTO tarifa = facturacionClient.obtenerTarifaVigente();
+            if (tarifa != null) {
+                // Usar cargo de gestión como referencia para costo/km
+                costoKmPromedioDesde = tarifa.getCargoGestionBase() / 10.0; // Aproximación
+                log.info("💰 Tarifa vigente obtenida: cargo base ${}", tarifa.getCargoGestionBase());
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ No se pudo obtener tarifa vigente, usando costo por defecto: ${}/km", costoKmPromedioDesde);
+        }
+        
         // Calcular tiempo y costo
         Double tiempoTotal = googleMapsService.calcularTiempoEstimado(distanciaTotal) + (cantidadDepositos * 4.0);
-        Double costoEstimado = (distanciaTotal * 150.0) + costoDepositosTotal;
+        Double costoEstimado = (distanciaTotal * costoKmPromedioDesde) + costoDepositosTotal;
         
         // Construir lista de IDs de depósitos
         String depositosIds = depositosSeleccionados.stream()

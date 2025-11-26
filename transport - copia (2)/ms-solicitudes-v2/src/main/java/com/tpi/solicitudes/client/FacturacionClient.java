@@ -12,6 +12,9 @@ public interface FacturacionClient {
     @GetMapping("/api/facturas/solicitud/{solicitudId}")
     FacturaDTO obtenerFacturaPorSolicitud(@PathVariable Long solicitudId);
     
+    @GetMapping("/api/tarifas/vigente")
+    TarifaDTO obtenerTarifaVigente();
+
     @PostMapping("/api/facturas/generar")
     FacturaDTO generarFactura(@RequestParam Long solicitudId);
 }

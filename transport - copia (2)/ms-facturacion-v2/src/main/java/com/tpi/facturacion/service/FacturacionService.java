@@ -149,6 +149,7 @@ public class FacturacionService {
     
     /**
      * Genera una factura automáticamente consultando solicitud y tramos
+     * Fórmula: Cargo Gestión + Costo Transporte (por km del camión) + Combustible (consumo real) + Estadías
      */
     public FacturaDTO generarFactura(Long solicitudId) {
         log.info("📄 Generando factura automática para solicitud ID: {}", solicitudId);
@@ -173,18 +174,38 @@ public class FacturacionService {
         Tarifa tarifa = tarifaRepository.findTarifaVigente(LocalDate.now())
                 .orElseThrow(() -> new RuntimeException("No hay tarifa vigente"));
         
-        // 1. Cargo de Gestión = 10% del costo real de transporte
-        Double cargoGestion = (solicitud.getCostoReal() != null ? solicitud.getCostoReal() : 0.0) * 0.10;
+        // 1. Cargo de Gestión = base + (cantidad_tramos × cargo_por_tramo)
+        Double cargoGestion = tarifa.getCargoGestionBase() + 
+                             (tramos.size() * tarifa.getCargoGestionPorTramo());
+        log.info("Cargo de gestión: ${} (base ${} + {} tramos × ${})", 
+                cargoGestion, tarifa.getCargoGestionBase(), tramos.size(), tarifa.getCargoGestionPorTramo());
         
-        // 2. Costo de Transporte = costo real de la solicitud
-        Double costoTransporte = solicitud.getCostoReal() != null ? solicitud.getCostoReal() : 0.0;
-        
-        // 3. Costo de Combustible = estimado según distancia total
-        Double costoCombustible = tramos.stream()
-                .mapToDouble(t -> (t.getDistanciaKm() != null ? t.getDistanciaKm() : 0.0) * 
-                                  0.08 * // Consumo estimado 0.08 L/km
-                                  tarifa.getPrecioCombustibleLitro())
+        // 2. Costo de Transporte = Σ(distancia_tramo × costo_km_camión)
+        // Usa el costo/km real de cada camión asignado
+        Double costoTransporte = tramos.stream()
+                .mapToDouble(t -> {
+                    Double distancia = t.getDistanciaKm() != null ? t.getDistanciaKm() : 0.0;
+                    Double costoKm = t.getCostoKm() != null ? t.getCostoKm() : 0.0;
+                    double costo = distancia * costoKm;
+                    log.info("  Tramo {}: {} km × ${}/km = ${}", t.getOrdenTramo(), distancia, costoKm, costo);
+                    return costo;
+                })
                 .sum();
+        log.info("Costo de transporte TOTAL: ${} ({} tramos)", costoTransporte, tramos.size());
+        
+        // 3. Costo de Combustible = Σ(distancia_tramo × consumo_camión × precio_litro)
+        // Usa el consumo real de cada camión
+        Double costoCombustible = tramos.stream()
+                .mapToDouble(t -> {
+                    Double distancia = t.getDistanciaKm() != null ? t.getDistanciaKm() : 0.0;
+                    Double consumoLtKm = t.getConsumoCombustibleLtKm() != null ? t.getConsumoCombustibleLtKm() : 0.0;
+                    double costo = distancia * consumoLtKm * tarifa.getPrecioCombustibleLitro();
+                    log.info("  Tramo {}: {} km × {} L/km × ${}/L = ${}", 
+                             t.getOrdenTramo(), distancia, consumoLtKm, tarifa.getPrecioCombustibleLitro(), costo);
+                    return costo;
+                })
+                .sum();
+        log.info("Costo de combustible TOTAL: ${} (precio/litro: ${})", costoCombustible, tarifa.getPrecioCombustibleLitro());
         
         // 4. Costo de Estadías - Obtener estadías FINALIZADAS del contenedor
         Double costoEstadias = 0.0;
@@ -231,7 +252,8 @@ public class FacturacionService {
                 .build();
         
         Factura guardada = facturaRepository.save(factura);
-        log.info("✅ Factura generada: {} - Total: ${}", numeroFactura, total);
+        log.info("✅ Factura generada: {} - Total: ${} (Desglose: Gestión=${} + Transporte=${} + Combustible=${} + Estadías=${})", 
+                numeroFactura, total, cargoGestion, costoTransporte, costoCombustible, costoEstadias);
         
         return convertirAFacturaDTO(guardada);
     }

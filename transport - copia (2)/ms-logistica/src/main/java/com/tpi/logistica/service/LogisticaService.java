@@ -72,8 +72,20 @@ public class LogisticaService {
         List<TramoDTO> tramos = new ArrayList<>();
         tramos.add(tramoDirecto);
         
-        // Estimar costo (se refinará con camión específico)
-        Double costoEstimado = distancia * 150.0; // Costo promedio por km
+        // Estimar costo usando tarifa vigente
+        Double costoEstimado = 0.0;
+        try {
+            com.tpi.logistica.client.TarifaDTO tarifa = facturacionClient.obtenerTarifaVigente();
+            if (tarifa != null) {
+                costoEstimado = distancia * (tarifa.getCargoGestionBase() / 10.0);
+                log.info("💰 Costo estimado calculado con tarifa vigente: ${}", costoEstimado);
+            } else {
+                costoEstimado = distancia * 150.0; // Fallback
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ No se pudo obtener tarifa vigente, usando costo por defecto: ${}", distancia * 150.0);
+            costoEstimado = distancia * 150.0;
+        }
         
         return RutaTentativaDTO.builder()
                 .solicitudId(solicitudId)
@@ -361,9 +373,21 @@ public class LogisticaService {
                     tramo.getSolicitudId());
             try {
                 // Calcular costo real total basado en distancia (ejemplo: $10000 por km)
-                double costoRealTotal = todosLosTramos.stream()
+                // Obtener tarifa vigente para calcular costo real
+                double costoRealTotal = 0.0;
+                try {
+                    com.tpi.logistica.client.TarifaDTO tarifa = facturacionClient.obtenerTarifaVigente();
+                    double costoKm = tarifa != null ? (tarifa.getCargoGestionBase() / 10.0) : 150.0;
+                    costoRealTotal = todosLosTramos.stream()
+                        .mapToDouble(t -> t.getDistanciaKm() != null ? t.getDistanciaKm() * costoKm : 0.0)
+                        .sum();
+                    log.info("💰 Costo real total calculado con tarifa vigente: ${}", costoRealTotal);
+                } catch (Exception ex) {
+                    log.warn("⚠️ Error al obtener tarifa, usando costo por defecto");
+                    costoRealTotal = todosLosTramos.stream()
                         .mapToDouble(t -> t.getDistanciaKm() != null ? t.getDistanciaKm() * 150.0 : 0.0)
                         .sum();
+                }
                 
                 // Calcular tiempo real total
                 double tiempoRealTotal = todosLosTramos.stream()
@@ -437,6 +461,26 @@ public class LogisticaService {
     
     // Métodos de conversión
     private TramoDTO convertirATramoDTO(Tramo t) {
+        Double costoKm = null;
+        Double consumoCombustibleLtKm = null;
+        
+        // Enriquecer con datos del camión asignado para cálculo de factura
+        if (t.getCamionId() != null) {
+            try {
+                Camion camion = camionRepository.findById(t.getCamionId())
+                        .orElse(null);
+                if (camion != null) {
+                    costoKm = camion.getCostoKm();
+                    consumoCombustibleLtKm = camion.getConsumoCombustibleLtKm();
+                    log.debug("Enriquecido tramo {}: costoKm={}, consumoLtKm={}", 
+                              t.getId(), costoKm, consumoCombustibleLtKm);
+                }
+            } catch (Exception e) {
+                log.warn("No se pudo obtener datos del camión {} para el tramo {}: {}", 
+                         t.getCamionId(), t.getId(), e.getMessage());
+            }
+        }
+        
         return TramoDTO.builder()
                 .id(t.getId())
                 .solicitudId(t.getSolicitudId())
@@ -454,6 +498,8 @@ public class LogisticaService {
                 .estado(t.getEstado())
                 .fechaInicio(t.getFechaInicio())
                 .fechaFin(t.getFechaFin())
+                .costoKm(costoKm)
+                .consumoCombustibleLtKm(consumoCombustibleLtKm)
                 .build();
     }
     
